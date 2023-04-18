@@ -19,7 +19,7 @@ class HomePageState extends State<HomePage> {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          CustomSliverAppBar(),
+          const CustomSliverAppBar(),
           StreamBuilder(
             stream: videoListStream,
             builder: (context, snapshot) {
@@ -37,11 +37,14 @@ class HomePageState extends State<HomePage> {
 
               return SliverList(
                 delegate: SliverChildBuilderDelegate(
-                      (BuildContext context, int index) {
+                  (BuildContext context, int index) {
                     final document = snapshot.data?.docs[index];
                     String title = document['title'];
                     String videoUrl = document['video_url'];
                     String thumbnailUrl = document['thumbnail_url'];
+                    String duration = document['duration'];
+                    String views = document['views'].toString();
+                    String likes = document['likes'].toString();
                     return Column(
                       children: [
                         Stack(
@@ -52,8 +55,59 @@ class HomePageState extends State<HomePage> {
                               width: double.infinity,
                               fit: BoxFit.cover,
                             ),
+                            Positioned(
+                              bottom: 8,
+                              right: 8,
+                              child: Container(
+                                padding: EdgeInsets.all(4),
+                                color: Colors.black54,
+                                child: Text(
+                                  duration,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
                           ],
-                        )
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Row(
+                            children: [
+                              GestureDetector(
+                                onTap: () {},
+                                child: CircleAvatar(
+                                  child: Icon(
+                                    Icons.person,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(
+                                width: 16,
+                              ),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      title,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.normal,
+                                      ),
+                                    ),
+                                    Text("${views} views - ${likes} likes"),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: () {},
+                                icon: Icon(Icons.more_vert),
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     );
                   },

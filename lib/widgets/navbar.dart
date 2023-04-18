@@ -83,6 +83,7 @@ class NavBarState extends State<NavBar> {
         currentIndex: selectedIndex,
         onTap: onNavBarItemTapped,
         selectedItemColor: Colors.cyanAccent,
+        backgroundColor: Colors.black,
       ),
     );
   }
