@@ -19,8 +19,49 @@ class HomePageState extends State<HomePage> {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          const CustomSliverAppBar(),
+          CustomSliverAppBar(),
+          StreamBuilder(
+            stream: videoListStream,
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return SliverFillRemaining(
+                  child: Center(child: Text('Something went wrong')),
+                );
+              }
 
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return SliverFillRemaining(
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+
+              return SliverList(
+                delegate: SliverChildBuilderDelegate(
+                      (BuildContext context, int index) {
+                    final document = snapshot.data?.docs[index];
+                    String title = document['title'];
+                    String videoUrl = document['video_url'];
+                    String thumbnailUrl = document['thumbnail_url'];
+                    return Column(
+                      children: [
+                        Stack(
+                          children: [
+                            Image.network(
+                              thumbnailUrl,
+                              height: 220,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            ),
+                          ],
+                        )
+                      ],
+                    );
+                  },
+                  childCount: snapshot.data?.docs.length ?? 0,
+                ),
+              );
+            },
+          ),
         ],
       ),
     );
