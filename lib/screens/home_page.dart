@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:video_app/widgets/video_card.dart';
@@ -11,14 +14,50 @@ class HomePage extends StatefulWidget {
 }
 
 class HomePageState extends State<HomePage> {
+  final Connectivity connectivity = Connectivity();
+  late StreamSubscription<ConnectivityResult> connectivitySubscription;
+  bool isConnected = true;
+
   List videoList = [];
   Stream videoListStream =
       FirebaseFirestore.instance.collection('videos').snapshots();
 
   @override
+  void initState() {
+    super.initState();
+    initConnectivity();
+  }
+
+  @override
+  void dispose() {
+    connectivitySubscription.cancel();
+    super.dispose();
+  }
+
+  Future<void> initConnectivity() async {
+    final ConnectivityResult result = await connectivity.checkConnectivity();
+
+    setState(() {
+      isConnected = result != ConnectivityResult.none;
+    });
+
+    connectivitySubscription =
+        connectivity.onConnectivityChanged.listen((ConnectivityResult result) {
+      setState(() {
+        isConnected = result != ConnectivityResult.none;
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: CustomScrollView(
+      /*body: Container(
+        child: isConnected
+            ? Text('Kết nối mạng ổn định')
+            : Text('Không có kết nối mạng'),
+      ),*/
+       body: CustomScrollView(
         slivers: [
           const CustomSliverAppBar(),
           StreamBuilder(
@@ -40,7 +79,9 @@ class HomePageState extends State<HomePage> {
                 delegate: SliverChildBuilderDelegate(
                   (BuildContext context, int index) {
                     final document = snapshot.data?.docs[index];
-                    return VideoCard(video: document);
+                    return VideoCard(
+                      video: document,
+                    );
                   },
                   childCount: snapshot.data?.docs.length ?? 0,
                 ),

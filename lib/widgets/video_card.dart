@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:video_app/screens/video_page.dart';
+import 'package:video_player/video_player.dart';
 
 class VideoCard extends StatelessWidget {
   final dynamic video;
@@ -15,7 +16,9 @@ class VideoCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => VideoPage(video: video),
+            builder: (context) => VideoPage(
+              video: video,
+            ),
           ),
         );
       },

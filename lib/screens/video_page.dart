@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:video_player/video_player.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
-class VideoPage extends StatelessWidget {
+class VideoPage extends StatefulWidget {
   final dynamic video;
   const VideoPage({
     Key? key,
@@ -10,11 +11,34 @@ class VideoPage extends StatelessWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    String url = video['video_url'];
-    List<String> urlSegments = url.split("/");
-    String videoId = urlSegments.last;
+  State<VideoPage> createState() => VideoPageState();
+}
 
+class VideoPageState extends State<VideoPage> {
+  late VideoPlayerController controller;
+  late Future<void> initializeVideoPlayerFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = VideoPlayerController.network(widget.video['video_url']);
+
+    controller.addListener(() {
+      setState(() {});
+    });
+    controller.setLooping(true);
+    controller.initialize().then((_) => setState(() {}));
+    controller.play();
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
         color: Theme.of(context).scaffoldBackgroundColor,
@@ -26,22 +50,17 @@ class VideoPage extends StatelessWidget {
                 children: [
                   Stack(
                     children: [
-                      YoutubePlayer(
-                        controller: YoutubePlayerController(
-                          initialVideoId: videoId,
-                          flags: const YoutubePlayerFlags(
-                            autoPlay: true,
-                            mute: false,
-                          ),
-                        ),
-                        showVideoProgressIndicator: true,
-                      ),
-                      /*Image.network(
-                        video['thumbnail_url'],
-                        height: 220,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                      ),*/
+                      controller.value.isInitialized
+                          ? AspectRatio(
+                              aspectRatio: controller.value.aspectRatio,
+                              child: VideoPlayer(controller),
+                            )
+                          : Image.network(
+                              widget.video['thumbnail_url'],
+                              height: 220,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            ),
                       IconButton(
                         onPressed: () {
                           Navigator.pop(context);
@@ -63,7 +82,7 @@ class VideoPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          video['title'],
+                          widget.video['title'],
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.normal,
@@ -71,7 +90,7 @@ class VideoPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                            "${video['views'].toString()} views - ${video['likes'].toString()} likes"),
+                            "${widget.video['views'].toString()} views - ${widget.video['likes'].toString()} likes"),
                         const Divider(),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -79,12 +98,12 @@ class VideoPage extends StatelessWidget {
                             buildAction(
                               context,
                               Icons.thumb_up_outlined,
-                              video['likes'].toString(),
+                              widget.video['likes'].toString(),
                             ),
                             buildAction(
                               context,
                               Icons.thumb_down_outlined,
-                              video['dislikes'].toString(),
+                              widget.video['dislikes'].toString(),
                             ),
                             buildAction(
                               context,
