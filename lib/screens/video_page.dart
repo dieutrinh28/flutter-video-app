@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:video_player/video_player.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class VideoPage extends StatefulWidget {
   final dynamic video;
@@ -17,6 +15,7 @@ class VideoPage extends StatefulWidget {
 class VideoPageState extends State<VideoPage> {
   late VideoPlayerController controller;
   late Future<void> initializeVideoPlayerFuture;
+  bool showPlayIcon = false;
 
   @override
   void initState() {
@@ -48,27 +47,61 @@ class VideoPageState extends State<VideoPage> {
             SliverToBoxAdapter(
               child: Column(
                 children: [
-                  Stack(
-                    children: [
-                      controller.value.isInitialized
-                          ? AspectRatio(
-                              aspectRatio: controller.value.aspectRatio,
-                              child: VideoPlayer(controller),
-                            )
-                          : Image.network(
-                              widget.video['thumbnail_url'],
-                              height: 220,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
+                  GestureDetector(
+                    onTapDown: (_) {
+                      setState(() {
+                        showPlayIcon = true;
+                      });
+
+                    },
+                    onTapUp: (_) {
+                      Future.delayed(const Duration(seconds: 3000)).then((value) {
+                        setState(() {
+                          showPlayIcon = false;
+                        });
+                      });
+                    },
+                    child: Stack(
+                      children: [
+                        controller.value.isInitialized
+                            ? AspectRatio(
+                                aspectRatio: controller.value.aspectRatio,
+                                child: VideoPlayer(controller),
+                              )
+                            : Image.network(
+                                widget.video['thumbnail_url'],
+                                height: 220,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                              ),
+                        if (showPlayIcon)
+                          Positioned.fill(
+                            child: Center(
+                              child: IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    controller.value.isPlaying
+                                        ? controller.pause()
+                                        : controller.play();
+                                  });
+                                },
+                                icon: Icon(controller.value.isPlaying
+                                    ? Icons.pause
+                                    : Icons.play_arrow),
+                                iconSize: 50,
+                                color: Colors.black,
+                              ),
                             ),
-                      IconButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        icon: const Icon(Icons.keyboard_arrow_down),
-                        iconSize: 30,
-                      ),
-                    ],
+                          ),
+                        IconButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          icon: const Icon(Icons.keyboard_arrow_down),
+                          iconSize: 30,
+                        ),
+                      ],
+                    ),
                   ),
                   const LinearProgressIndicator(
                     value: 0.4,

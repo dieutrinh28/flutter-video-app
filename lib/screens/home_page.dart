@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:video_app/services/video_manager.dart';
 import 'package:video_app/widgets/video_card.dart';
 import '../widgets/custom_sliver_app_bar.dart';
 
@@ -19,8 +20,7 @@ class HomePageState extends State<HomePage> {
   bool isConnected = true;
 
   List videoList = [];
-  Stream videoListStream =
-      FirebaseFirestore.instance.collection('videos').snapshots();
+  Stream videoListStream = VideoManager.getVideoList();
 
   @override
   void initState() {
@@ -78,9 +78,9 @@ class HomePageState extends State<HomePage> {
               return SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (BuildContext context, int index) {
-                    final document = snapshot.data?.docs[index];
+                    final video = snapshot.data?.docs[index];
                     return VideoCard(
-                      video: document,
+                      video: video,
                     );
                   },
                   childCount: snapshot.data?.docs.length ?? 0,
